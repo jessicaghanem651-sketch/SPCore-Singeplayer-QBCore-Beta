@@ -1000,12 +1000,12 @@ namespace SPCore
                 public int SellWeapon(Item item){if(item==null||item.Weapon==null)return 0;var shop=cfg.Ammu.FirstOrDefault(x=>x.Id.Equals(item.Id,StringComparison.OrdinalIgnoreCase));int basePrice=shop==null?50000:shop.Price;int pct=new Random().Next(30,76);return Math.Max(1,basePrice*pct/100);}
         public void Dispose()
         {
-            foreach(var h0 in gasBlips.Concat(ammuBlips).ToList()) { int h=h0; if(h!=0) { try { Function.Call(Hash.REMOVE_BLIP, ref h); } catch {} } }
-            if(bankBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,ref bankBlipHandle);}catch{}}
-            if(dealerBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,ref dealerBlipHandle);}catch{}}
-            if(cityHallBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,ref cityHallBlipHandle);}catch{}}
-            if(weedDealerBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,ref weedDealerBlipHandle);}catch{}}
-            foreach(var h0 in greenhouseBlips.ToList()){int h=h0;if(h!=0){try{Function.Call(Hash.REMOVE_BLIP,ref h);}catch{}}}
+            foreach(var h0 in gasBlips.Concat(ammuBlips).ToList()) { int h=h0; if(h!=0) { try { Function.Call(Hash.REMOVE_BLIP, h); } catch {} } }
+            if(bankBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,bankBlipHandle);}catch{}}
+            if(dealerBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,dealerBlipHandle);}catch{}}
+            if(cityHallBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,cityHallBlipHandle);}catch{}}
+            if(weedDealerBlipHandle!=0){try{Function.Call(Hash.REMOVE_BLIP,weedDealerBlipHandle);}catch{}}
+            foreach(var h0 in greenhouseBlips.ToList()){int h=h0;if(h!=0){try{Function.Call(Hash.REMOVE_BLIP,h);}catch{}}}
             try{if(dealerPed!=null&&dealerPed.Exists())dealerPed.Delete();}catch{}
             try{if(cityHallPed!=null&&cityHallPed.Exists())cityHallPed.Delete();}catch{}
             try{if(weedDealerPed!=null&&weedDealerPed.Exists())weedDealerPed.Delete();}catch{}
@@ -1116,6 +1116,44 @@ namespace SPCore
         [StructLayout(LayoutKind.Sequential)] private struct POINT { public int X; public int Y; }
         [StructLayout(LayoutKind.Sequential)] private struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
         public bool Open { get { return open; } }
+
+        public bool HandleAmountKey(System.Windows.Forms.Keys key)
+        {
+            if (!open) return false;
+            if (key >= System.Windows.Forms.Keys.D0 && key <= System.Windows.Forms.Keys.D9)
+            {
+                char c = (char)('0' + ((int)key - (int)System.Windows.Forms.Keys.D0));
+                if (amountInput == "0") amountInput = c.ToString();
+                else if (amountInput.Length < 6) amountInput += c;
+                return true;
+            }
+            if (key >= System.Windows.Forms.Keys.NumPad0 && key <= System.Windows.Forms.Keys.NumPad9)
+            {
+                char c = (char)('0' + ((int)key - (int)System.Windows.Forms.Keys.NumPad0));
+                if (amountInput == "0") amountInput = c.ToString();
+                else if (amountInput.Length < 6) amountInput += c;
+                return true;
+            }
+            if (key == System.Windows.Forms.Keys.Back)
+            {
+                if (!string.IsNullOrEmpty(amountInput)) amountInput = amountInput.Substring(0, amountInput.Length - 1);
+                if (string.IsNullOrEmpty(amountInput)) amountInput = "1";
+                return true;
+            }
+            if (key == System.Windows.Forms.Keys.Delete)
+            {
+                amountInput = "0";
+                return true;
+            }
+            return false;
+        }
+
+        private int RequestedAmount()
+        {
+            int value;
+            if (!int.TryParse(amountInput, out value)) return 1;
+            return Math.Max(0, value);
+        }
 
         public InventoryUI(InventoryConfig c, InventoryStore s, LootManager l, ShopManager sh)
         { cfg = c; store = s; loot = l; shops = sh; }
@@ -1910,7 +1948,7 @@ namespace SPCore
             if(d<5f && !working && HasDrugs())new TextElement("~b~E~s~  START TRAP WORK",new PointF(640,665),0.30f,Color.White,GTA.UI.Font.ChaletLondon,Alignment.Center).ScaledDraw();
             else if(d<5f && working)new TextElement("~b~E~s~  STOP TRAP WORK",new PointF(640,665),0.30f,Color.White,GTA.UI.Font.ChaletLondon,Alignment.Center).ScaledDraw();
         }
-        public void Dispose(){DeleteClient();if(blip!=0){try{int h=blip;Function.Call(Hash.REMOVE_BLIP,ref h);}catch{}}}
+        public void Dispose(){DeleteClient();if(blip!=0){try{int h=blip;Function.Call(Hash.REMOVE_BLIP,h);}catch{}}}
     }
 
     public sealed class SurvivalNeeds
